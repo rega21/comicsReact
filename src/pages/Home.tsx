@@ -35,6 +35,7 @@ const Home: React.FC = () => {
   const [movies, setMovies] = useState<TMDBMovie[]>([]);
   const [moviesLoading, setMoviesLoading] = useState(false);
   const [moviesError, setMoviesError] = useState<string | null>(null);
+  const [currentMoviePage, setCurrentMoviePage] = useState(1);
   
   // Estados para navbar
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,12 +137,13 @@ const Home: React.FC = () => {
   };
 
   // Cargar películas populares al iniciar
-  const loadPopularMovies = async () => {
+  const loadPopularMovies = async (page: number = 1) => {
     setMoviesLoading(true);
     setMoviesError(null);
     try {
-      const response = await getPopularSuperheroMovies(1);
+      const response = await getPopularSuperheroMovies(page);
       setMovies(response.results);
+      setCurrentMoviePage(page);
     } catch (error) {
       console.error('Error loading popular movies:', error);
       setMoviesError('Error al cargar las películas populares');
@@ -157,6 +159,17 @@ const Home: React.FC = () => {
     console.log('🔍 Búsqueda global:', searchQuery);
     // Aquí se implementará la búsqueda global cuando esté lista
     // Por ahora mantener la pestaña actual
+  };
+
+  // Funciones para navegación de películas
+  const handleNextMoviePage = () => {
+    loadPopularMovies(currentMoviePage + 1);
+  };
+
+  const handlePrevMoviePage = () => {
+    if (currentMoviePage > 1) {
+      loadPopularMovies(currentMoviePage - 1);
+    }
   };
 
   const renderCarousel = () => (
@@ -317,7 +330,7 @@ const Home: React.FC = () => {
   const renderMovies = () => (
     <div className="content-section">
       <div className="section-header">
-        <h2>{isWikiMode && wikiSection === 'movies' ? 'Wiki: Comic Movies' : 'Películas de Superhéroes'}</h2>
+        <h2>Películas de Superhéroes</h2>
         <p>{isWikiMode && wikiSection === 'movies' ? 'Comprehensive database of comic book adaptations' : 'Descubre las mejores adaptaciones cinematográficas'}</p>
       </div>
 
@@ -325,35 +338,59 @@ const Home: React.FC = () => {
       {moviesError && <div className="error">{moviesError}</div>}
 
       {!moviesLoading && !moviesError && (
-        <div className="movies-grid">
-          {movies.slice(0, isWikiMode && wikiSection === 'movies' ? 12 : movies.length).map((movie) => (
-            <div key={movie.id} className="movie-card" onClick={() => setSelectedMovie(movie)}>
-              <div className="movie-image">
-                <img 
-                  src={movie.backdrop_path 
-                    ? `https://image.tmdb.org/t/p/w500${movie.backdrop_path}` 
-                    : (movie.poster_path 
-                        ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-                        : getMovieFallback('medium')
-                      )
-                  } 
-                  alt={movie.title}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = getMovieFallback('medium');
-                  }}
-                />
+        <>
+          <div className="movies-grid">
+            {movies.slice(0, isWikiMode && wikiSection === 'movies' ? 12 : movies.length).map((movie) => (
+              <div key={movie.id} className="movie-card" onClick={() => setSelectedMovie(movie)}>
+                <div className="movie-image">
+                  <img 
+                    src={movie.backdrop_path 
+                      ? `https://image.tmdb.org/t/p/w500${movie.backdrop_path}` 
+                      : (movie.poster_path 
+                          ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                          : getMovieFallback('medium')
+                        )
+                    } 
+                    alt={movie.title}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = getMovieFallback('medium');
+                    }}
+                  />
+                </div>
+                <div className="movie-info">
+                  <h3 className="movie-title">{movie.title}</h3>
+                  <p className="release-date">{new Date(movie.release_date).getFullYear()}</p>
+                  {!(isWikiMode && wikiSection === 'movies') && (
+                    <p className="description">{movie.overview?.slice(0, 100)}...</p>
+                  )}
+                </div>
               </div>
-              <div className="movie-info">
-                <h3 className="movie-title">{movie.title}</h3>
-                <p className="release-date">{new Date(movie.release_date).getFullYear()}</p>
-                {!(isWikiMode && wikiSection === 'movies') && (
-                  <p className="description">{movie.overview?.slice(0, 100)}...</p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          
+          {/* Botones de paginación para películas */}
+          <div className="pagination-controls">
+            <button 
+              className="pagination-btn prev-btn"
+              onClick={handlePrevMoviePage}
+              disabled={currentMoviePage === 1}
+            >
+              ← Anterior
+            </button>
+            
+            <span className="page-info">
+              Página {currentMoviePage}
+            </span>
+            
+            <button 
+              className="pagination-btn next-btn"
+              onClick={handleNextMoviePage}
+            >
+              Siguiente →
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
