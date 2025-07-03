@@ -30,6 +30,7 @@ const Home: React.FC = () => {
   const [characters, setCharacters] = useState<ComicVineCharacter[]>([]);
   const [charactersLoading, setCharactersLoading] = useState(false);
   const [charactersError, setCharactersError] = useState<string | null>(null);
+  const [currentCharacterPage, setCurrentCharacterPage] = useState(1);
   
   // Estados para películas (TMDB)
   const [movies, setMovies] = useState<TMDBMovie[]>([]);
@@ -38,7 +39,6 @@ const Home: React.FC = () => {
   const [currentMoviePage, setCurrentMoviePage] = useState(1);
   
   // Estados para navbar
-  const [searchQuery, setSearchQuery] = useState('');
   const [showWikiDropdown, setShowWikiDropdown] = useState(false);
   const [isWikiMode, setIsWikiMode] = useState(false);
   const [wikiSection, setWikiSection] = useState<string>('');
@@ -51,7 +51,6 @@ const Home: React.FC = () => {
   // Función para resetear al inicio
   const resetToHome = () => {
     setActiveTab('comics');
-    setSearchQuery('');
     setShowWikiDropdown(false);
     setIsWikiMode(false);
     setWikiSection('');
@@ -122,12 +121,13 @@ const Home: React.FC = () => {
     }
   };
 
-  const loadPopularCharacters = async () => {
+  const loadPopularCharacters = async (page: number = 1) => {
     setCharactersLoading(true);
     setCharactersError(null);
     try {
-      const response = await getPopularCharacters(1, true);
+      const response = await getPopularCharacters(page, true);
       setCharacters(response.results);
+      setCurrentCharacterPage(page);
     } catch (error) {
       console.error('Error loading popular characters:', error);
       setCharactersError('Error al cargar los personajes populares');
@@ -152,15 +152,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // Función para manejar búsqueda global
-  const handleGlobalSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    console.log('🔍 Búsqueda global:', searchQuery);
-    // Aquí se implementará la búsqueda global cuando esté lista
-    // Por ahora mantener la pestaña actual
-  };
-
   // Funciones para navegación de películas
   const handleNextMoviePage = () => {
     loadPopularMovies(currentMoviePage + 1);
@@ -169,6 +160,17 @@ const Home: React.FC = () => {
   const handlePrevMoviePage = () => {
     if (currentMoviePage > 1) {
       loadPopularMovies(currentMoviePage - 1);
+    }
+  };
+
+  // Funciones para navegación de personajes
+  const handleNextCharacterPage = () => {
+    loadPopularCharacters(currentCharacterPage + 1);
+  };
+
+  const handlePrevCharacterPage = () => {
+    if (currentCharacterPage > 1) {
+      loadPopularCharacters(currentCharacterPage - 1);
     }
   };
 
@@ -295,34 +297,55 @@ const Home: React.FC = () => {
       {charactersError && (
         <div className="error">
           <p>{charactersError}</p>
-          <button onClick={loadPopularCharacters}>Reintentar</button>
+          <button onClick={() => loadPopularCharacters(1)}>Reintentar</button>
         </div>
       )}
       
       {!charactersLoading && !charactersError && (
-        <div className="characters-grid">
-          {characters.map((character) => (
-            <div key={character.id} className="character-card" onClick={() => setSelectedCharacter(character)}>
-              <div className="character-image">
-                <img 
-                  src={character.image?.medium_url || getSmartCharacterFallback(character, 'medium')} 
-                  alt={character.name}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = getSmartCharacterFallback(character, 'medium');
-                  }}
-                />
+        <>
+          <div className="characters-grid">
+            {characters.slice(0, 12).map((character) => (
+              <div key={character.id} className="character-card" onClick={() => setSelectedCharacter(character)}>
+                <div className="character-image">
+                  <img 
+                    src={character.image?.medium_url || getSmartCharacterFallback(character, 'medium')} 
+                    alt={character.name}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = getSmartCharacterFallback(character, 'medium');
+                    }}
+                  />
+                </div>
+                <div className="character-info">
+                  <h3 className="character-name">{character.name}</h3>
+                  <p className="real-name">{character.real_name || 'Identidad secreta'}</p>
+                </div>
               </div>
-              <div className="character-info">
-                <h3 className="character-name">{character.name}</h3>
-                <p className="real-name">{character.real_name || 'Identidad secreta'}</p>
-                <p className="description">
-                  {character.description?.replace(/<[^>]*>/g, '').slice(0, 150)}...
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          
+          {/* Botones de paginación para personajes */}
+          <div className="pagination-controls">
+            <button 
+              className="pagination-btn prev-btn"
+              onClick={handlePrevCharacterPage}
+              disabled={currentCharacterPage === 1}
+            >
+              ← Anterior
+            </button>
+            
+            <span className="page-info">
+              Página {currentCharacterPage}
+            </span>
+            
+            <button 
+              className="pagination-btn next-btn"
+              onClick={handleNextCharacterPage}
+            >
+              Siguiente →
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
@@ -444,23 +467,6 @@ const Home: React.FC = () => {
           >
             Community
           </button>
-          
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search for comics, characters, movies..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleGlobalSearch()}
-              className="search-input"
-            />
-            <button 
-              onClick={handleGlobalSearch}
-              className="search-button"
-            >
-              🔍
-            </button>
-          </div>
         </div>
       </nav>
 
