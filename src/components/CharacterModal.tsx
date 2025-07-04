@@ -1,5 +1,4 @@
 import React from 'react';
-import { getCharacterFallback } from '../utils/imageUtils';
 import type { Character as ComicVineCharacter } from '../api/comicvine';
 
 interface CharacterModalProps {
@@ -30,12 +29,8 @@ const CharacterModal: React.FC<CharacterModalProps> = ({ character, isOpen, onCl
         <div className="modal-body">
           <div className="character-modal-image">
             <img
-              src={character.image?.screen_large_url || getCharacterFallback('large')}
+              src={character.image?.screen_large_url || character.image?.medium_url || 'https://via.placeholder.com/600x800/663399/ffffff?text=Character'}
               alt={character.name}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = getCharacterFallback('large');
-              }}
             />
           </div>
 

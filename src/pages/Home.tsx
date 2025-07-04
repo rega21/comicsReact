@@ -2,17 +2,23 @@ import React, { useState, useEffect } from 'react';
 import ComicModal from '../components/ComicModal';
 import CharacterModal from '../components/CharacterModal';
 import MovieModal from '../components/MovieModal';
-import { getMovieFallback, getSmartCharacterFallback } from '../utils/imageUtils';
+import LocationModal from '../components/LocationModal';
+import SeriesModal from '../components/SeriesModal';
+import { getMovieFallback } from '../utils/imageUtils';
 
 // Importar TMDB para películas
 import { getPopularSuperheroMovies, type TMDBMovie } from '../api/tmdb-example';
 
-// Importar ComicVine para cómics y personajes  
+// Importar ComicVine para cómics, personajes, locations y series
 import { 
   getPopularComics, 
-  getPopularCharacters, 
+  getPopularCharacters,
+  getPopularLocations,
+  getPopularSeries,
   type Comic as ComicVineComic, 
-  type Character as ComicVineCharacter 
+  type Character as ComicVineCharacter,
+  type Location as ComicVineLocation,
+  type Series as ComicVineSeries
 } from '../api/comicvine';
 
 const Home: React.FC = () => {
@@ -31,6 +37,20 @@ const Home: React.FC = () => {
   const [charactersLoading, setCharactersLoading] = useState(false);
   const [charactersError, setCharactersError] = useState<string | null>(null);
   const [currentCharacterPage, setCurrentCharacterPage] = useState(1);
+  
+  // Estados para locations (ComicVine)
+  const [locations, setLocations] = useState<ComicVineLocation[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(false);
+  const [locationsError, setLocationsError] = useState<string | null>(null);
+  const [currentLocationPage, setCurrentLocationPage] = useState(1);
+  const [selectedLocation, setSelectedLocation] = useState<ComicVineLocation | null>(null);
+  
+  // Estados para series (ComicVine)
+  const [series, setSeries] = useState<ComicVineSeries[]>([]);
+  const [seriesLoading, setSeriesLoading] = useState(false);
+  const [seriesError, setSeriesError] = useState<string | null>(null);
+  const [currentSeriesPage, setCurrentSeriesPage] = useState(1);
+  const [selectedSeries, setSelectedSeries] = useState<ComicVineSeries | null>(null);
   
   // Estados para películas (TMDB)
   const [movies, setMovies] = useState<TMDBMovie[]>([]);
@@ -81,6 +101,8 @@ const Home: React.FC = () => {
     loadPopularComics();
     loadPopularCharacters(); 
     loadPopularMovies();
+    loadPopularLocations();
+    loadPopularSeries();
   }, []);
 
   const loadCarouselMovies = async () => {
@@ -152,6 +174,38 @@ const Home: React.FC = () => {
     }
   };
 
+  // Cargar locations populares al iniciar
+  const loadPopularLocations = async (page: number = 1) => {
+    setLocationsLoading(true);
+    setLocationsError(null);
+    try {
+      const response = await getPopularLocations(page, true);
+      setLocations(response.results);
+      setCurrentLocationPage(page);
+    } catch (error) {
+      console.error('Error loading popular locations:', error);
+      setLocationsError('Error al cargar las ubicaciones populares');
+    } finally {
+      setLocationsLoading(false);
+    }
+  };
+
+  // Cargar series populares al iniciar
+  const loadPopularSeries = async (page: number = 1) => {
+    setSeriesLoading(true);
+    setSeriesError(null);
+    try {
+      const response = await getPopularSeries(page, true);
+      setSeries(response.results);
+      setCurrentSeriesPage(page);
+    } catch (error) {
+      console.error('Error loading popular series:', error);
+      setSeriesError('Error al cargar las series populares');
+    } finally {
+      setSeriesLoading(false);
+    }
+  };
+
   // Funciones para navegación de películas
   const handleNextMoviePage = () => {
     loadPopularMovies(currentMoviePage + 1);
@@ -171,6 +225,28 @@ const Home: React.FC = () => {
   const handlePrevCharacterPage = () => {
     if (currentCharacterPage > 1) {
       loadPopularCharacters(currentCharacterPage - 1);
+    }
+  };
+
+  // Funciones para navegación de locations
+  const handleNextLocationPage = () => {
+    loadPopularLocations(currentLocationPage + 1);
+  };
+
+  const handlePrevLocationPage = () => {
+    if (currentLocationPage > 1) {
+      loadPopularLocations(currentLocationPage - 1);
+    }
+  };
+
+  // Funciones para navegación de series
+  const handleNextSeriesPage = () => {
+    loadPopularSeries(currentSeriesPage + 1);
+  };
+
+  const handlePrevSeriesPage = () => {
+    if (currentSeriesPage > 1) {
+      loadPopularSeries(currentSeriesPage - 1);
     }
   };
 
@@ -308,12 +384,8 @@ const Home: React.FC = () => {
               <div key={character.id} className="character-card" onClick={() => setSelectedCharacter(character)}>
                 <div className="character-image">
                   <img 
-                    src={character.image?.medium_url || getSmartCharacterFallback(character, 'medium')} 
+                    src={character.image?.medium_url || 'https://via.placeholder.com/400x600/663399/ffffff?text=Character'} 
                     alt={character.name}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = getSmartCharacterFallback(character, 'medium');
-                    }}
                   />
                 </div>
                 <div className="character-info">
@@ -362,9 +434,9 @@ const Home: React.FC = () => {
 
       {!moviesLoading && !moviesError && (
         <>
-          <div className="movies-grid">
+          <div className={isWikiMode && wikiSection === 'movies' ? "movies-grid-wiki" : "movies-grid"}>
             {movies.slice(0, isWikiMode && wikiSection === 'movies' ? 12 : movies.length).map((movie) => (
-              <div key={movie.id} className="movie-card" onClick={() => setSelectedMovie(movie)}>
+              <div key={movie.id} className={isWikiMode && wikiSection === 'movies' ? "movie-card-wiki" : "movie-card"} onClick={() => setSelectedMovie(movie)}>
                 <div className="movie-image">
                   <img 
                     src={movie.backdrop_path 
@@ -409,6 +481,146 @@ const Home: React.FC = () => {
             <button 
               className="pagination-btn next-btn"
               onClick={handleNextMoviePage}
+            >
+              Siguiente →
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  const renderLocations = () => (
+    <div className="content-section">
+      <div className="section-header">
+        <h2>Ubicaciones Icónicas</h2>
+        <p>Explora los lugares más emblemáticos del universo de los cómics</p>
+      </div>
+      
+      {locationsLoading && (
+        <div className="loading">
+          <p>Cargando ubicaciones...</p>
+        </div>
+      )}
+      
+      {locationsError && (
+        <div className="error">
+          <p>{locationsError}</p>
+          <button onClick={() => loadPopularLocations(1)}>Reintentar</button>
+        </div>
+      )}
+      
+      {!locationsLoading && !locationsError && (
+        <>
+          <div className="locations-grid">
+            {locations.slice(0, 12).map((location) => (
+              <div key={location.id} className="location-card" onClick={() => setSelectedLocation(location)}>
+                <div className="location-image">
+                  <img 
+                    src={location.image?.medium_url || 'https://via.placeholder.com/400x300/333333/ffffff?text=Location'} 
+                    alt={location.name}
+                  />
+                </div>
+                <div className="location-info">
+                  <h3 className="location-name">{location.name}</h3>
+                  <p className="location-publisher">{location.publisher?.name || 'Editorial desconocida'}</p>
+                  <p className="location-description">
+                    {location.description ? 
+                      location.description.replace(/<[^>]*>/g, '').slice(0, 120) + '...' : 
+                      'Descripción no disponible'
+                    }
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Botones de paginación para locations */}
+          <div className="pagination-controls">
+            <button 
+              className="pagination-btn prev-btn"
+              onClick={handlePrevLocationPage}
+              disabled={currentLocationPage === 1}
+            >
+              ← Anterior
+            </button>
+            
+            <span className="page-info">
+              Página {currentLocationPage}
+            </span>
+            
+            <button 
+              className="pagination-btn next-btn"
+              onClick={handleNextLocationPage}
+            >
+              Siguiente →
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  const renderSeries = () => (
+    <div className="content-section">
+      <div className="section-header">
+        <h2>Series Icónicas</h2>
+        <p>Explora las series de cómics más emblemáticas e influyentes</p>
+      </div>
+      
+      {seriesLoading && (
+        <div className="loading">
+          <p>Cargando series...</p>
+        </div>
+      )}
+      
+      {seriesError && (
+        <div className="error">
+          <p>{seriesError}</p>
+          <button onClick={() => loadPopularSeries(1)}>Reintentar</button>
+        </div>
+      )}
+      
+      {!seriesLoading && !seriesError && (
+        <>
+          <div className="series-grid">
+            {series.slice(0, 12).map((serie) => (
+              <div key={serie.id} className="series-card" onClick={() => setSelectedSeries(serie)}>
+                <div className="series-image">
+                  <img 
+                    src={serie.image?.medium_url || 'https://via.placeholder.com/400x300/333333/ffffff?text=Series'} 
+                    alt={serie.name}
+                  />
+                </div>
+                <div className="series-info">
+                  <h3 className="series-name">{serie.name}</h3>
+                  <p className="series-publisher">{serie.publisher?.name || 'Editorial desconocida'}</p>
+                  <p className="series-volumes">
+                    {serie.count_of_volumes ? `${serie.count_of_volumes} volúmenes` : 'Volúmenes desconocidos'}
+                    {serie.start_year && ` • Desde ${serie.start_year}`}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Botones de paginación para series */}
+          <div className="pagination-controls">
+            <button 
+              className="pagination-btn prev-btn"
+              onClick={handlePrevSeriesPage}
+              disabled={currentSeriesPage === 1}
+            >
+              ← Anterior
+            </button>
+            
+            <span className="page-info">
+              Página {currentSeriesPage}
+            </span>
+            
+            <button 
+              className="pagination-btn next-btn"
+              onClick={handleNextSeriesPage}
             >
               Siguiente →
             </button>
@@ -477,11 +689,13 @@ const Home: React.FC = () => {
           {wikiSection === 'movies' && renderMovies()}
           {wikiSection === 'characters' && renderCharacters()}
           {wikiSection === 'comics' && renderComics()}
-          {(wikiSection === 'locations' || wikiSection === 'teams' || wikiSection === 'series') && (
+          {wikiSection === 'locations' && renderLocations()}
+          {wikiSection === 'series' && renderSeries()}
+          {wikiSection === 'teams' && (
             <div className="content-section">
               <div className="section-header">
-                <h2>Wiki: {wikiSection.charAt(0).toUpperCase() + wikiSection.slice(1)}</h2>
-                <p>Coming soon - {wikiSection} database</p>
+                <h2>Wiki: Teams</h2>
+                <p>Coming soon - Teams database</p>
               </div>
               <div className="coming-soon">
                 <p>This section is under development</p>
@@ -519,12 +733,8 @@ const Home: React.FC = () => {
                   <div key={character.id} className="horizontal-card" onClick={() => setSelectedCharacter(character)}>
                     <div className="horizontal-card-image">
                       <img 
-                        src={character.image?.small_url || getSmartCharacterFallback(character, 'small')} 
+                        src={character.image?.small_url || 'https://via.placeholder.com/200x300/663399/ffffff?text=Character'} 
                         alt={character.name}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = getSmartCharacterFallback(character, 'small');
-                        }}
                       />
                     </div>
                     <div className="horizontal-card-content">
@@ -562,12 +772,8 @@ const Home: React.FC = () => {
                   <div key={character.id} className="horizontal-card" onClick={() => setSelectedCharacter(character)}>
                     <div className="horizontal-card-image">
                       <img 
-                        src={character.image?.small_url || getSmartCharacterFallback(character, 'small')} 
+                        src={character.image?.small_url || 'https://via.placeholder.com/200x300/663399/ffffff?text=Character'} 
                         alt={character.name}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = getSmartCharacterFallback(character, 'small');
-                        }}
                       />
                     </div>
                     <div className="horizontal-card-content">
@@ -631,6 +837,20 @@ const Home: React.FC = () => {
           movie={selectedMovie}
           isOpen={!!selectedMovie}
           onClose={() => setSelectedMovie(null)} 
+        />
+      )}
+
+      {selectedLocation && (
+        <LocationModal 
+          location={selectedLocation}
+          onClose={() => setSelectedLocation(null)} 
+        />
+      )}
+
+      {selectedSeries && (
+        <SeriesModal 
+          series={selectedSeries}
+          onClose={() => setSelectedSeries(null)} 
         />
       )}
     </div>

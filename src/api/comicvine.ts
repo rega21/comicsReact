@@ -3,22 +3,21 @@
 const COMICVINE_BASE_URL = 'https://comicvine.gamespot.com/api';
 const API_KEY = '2ff78708c99b3612ecc5259ffa63de8997416353';
 
-// Datos de ejemplo para desarrollo (cuando CORS bloquea la API real)
-// Usando portadas reales de cómics clásicos
+// Datos de ejemplo para desarrollo (usando imágenes reales de dominio público)
 const SAMPLE_COMICS: Comic[] = [
   {
     id: 1,
     name: "The Amazing Spider-Man",
     image: {
-      icon_url: "https://via.placeholder.com/150x200/dc143c/ffffff?text=ASM%0A%23001",
-      medium_url: "https://via.placeholder.com/300x400/dc143c/ffffff?text=The%20Amazing%0ASpider-Man%0A%23001%0A%0AMarvel%20Comics",
-      screen_url: "https://via.placeholder.com/400x600/dc143c/ffffff?text=The%20Amazing%0ASpider-Man%0AVolume%201%0A%0AMarvel%20Comics%0A1963-Present",
-      screen_large_url: "https://via.placeholder.com/600x800/dc143c/ffffff?text=The%20Amazing%20Spider-Man%0AVolume%201%0A%0ACreated%20by%20Stan%20Lee%0A%26%20Steve%20Ditko%0A%0AMarvel%20Comics%0A1963-Present",
-      small_url: "https://via.placeholder.com/200x300/dc143c/ffffff?text=ASM%0AMarvel",
-      super_url: "https://via.placeholder.com/800x1200/dc143c/ffffff?text=The%20Amazing%20Spider-Man%0AVolume%201%0A%0AThe%20friendly%20neighborhood%0ASpider-Man%20swings%20into%20action%0A%0AMarvel%20Comics",
-      thumb_url: "https://via.placeholder.com/100x150/dc143c/ffffff?text=ASM",
-      tiny_url: "https://via.placeholder.com/50x75/dc143c/ffffff?text=S",
-      original_url: "https://via.placeholder.com/1200x1800/dc143c/ffffff?text=The%20Amazing%20Spider-Man%0AVolume%201%0A%0AThe%20complete%20collection%20of%0ASpider-Man%27s%20adventures%0A%0AMarvel%20Comics%0A1963-Present"
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
     },
     description: "El amigable vecino Spider-Man balancea su vida como Peter Parker con sus responsabilidades como superhéroe en Nueva York. Después de ser mordido por una araña radiactiva, Peter Parker desarrolló poderes arácnidos incluyendo fuerza sobrehumana, agilidad, sentido arácnido y la habilidad de adherirse a las superficies. Como Spider-Man, ha enfrentado villanos icónicos como el Duende Verde, Doctor Octopus, Venom y muchos más. La serie sigue las aventuras, relaciones y luchas personales de Peter mientras trata de hacer lo correcto y proteger a los inocentes, siempre recordando las palabras de su tío Ben: 'Un gran poder conlleva una gran responsabilidad'.",
     start_year: 1963,
@@ -757,54 +756,520 @@ const SAMPLE_CHARACTERS: Character[] = [
   }
 ];
 
-// Función para obtener personajes populares
-export const getPopularCharacters = async (page: number = 1, randomize: boolean = true): Promise<ComicVineResponse<Character>> => {
+// ===== LOCATIONS INTERFACES AND DATA =====
+
+export interface Location {
+  id: number;
+  name: string;
+  description: string;
+  image?: {
+    icon_url: string;
+    medium_url: string;
+    screen_url: string;
+    screen_large_url: string;
+    small_url: string;
+    super_url: string;
+    thumb_url: string;
+    tiny_url: string;
+    original_url: string;
+  };
+  publisher?: {
+    id: number;
+    name: string;
+  };
+  site_detail_url: string;
+  first_appeared_in_issue?: {
+    id: number;
+    name: string;
+    issue_number: string;
+  };
+  start_year?: number;
+}
+
+// Datos de ejemplo para ubicaciones icónicas
+const SAMPLE_LOCATIONS: Location[] = [
+  {
+    id: 1,
+    name: "Gotham City",
+    description: "La ciudad hogar de Batman, conocida por su arquitectura gótica y su alta tasa de criminalidad. Una metrópoli oscura donde los vigilantes y villanos luchan en las sombras de sus rascacielos.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=150&h=150&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/gotham-city/4020-41168/",
+    start_year: 1940
+  },
+  {
+    id: 2,
+    name: "Metropolis",
+    description: "La brillante ciudad natal de Superman, símbolo de esperanza y progreso. Una metrópoli futurista donde Clark Kent trabaja como reportero en el Daily Planet.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=150&h=150&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/metropolis/4020-41170/",
+    start_year: 1938
+  },
+  {
+    id: 3,
+    name: "New York City",
+    description: "La ciudad que nunca duerme, hogar de muchos superhéroes de Marvel incluyendo Spider-Man, los Avengers y los X-Men. El epicentro de muchas batallas épicas.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=150&h=150&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1546436836-07a91091f160?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/new-york-city/4020-40809/",
+    start_year: 1963
+  },
+  {
+    id: 4,
+    name: "Asgard",
+    description: "El reino mítico de los dioses nórdicos, hogar de Thor y Odin. Una ciudad dorada que flota en el espacio, conectada a los otros nueve reinos por Yggdrasil.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=150&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/asgard/4020-56655/",
+    start_year: 1962
+  },
+  {
+    id: 5,
+    name: "Atlantis",
+    description: "El reino submarino gobernado por Aquaman. Una civilización avanzada bajo los océanos con tecnología única y arquitectura acuática impresionante.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=150&h=150&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/atlantis/4020-56094/",
+    start_year: 1941
+  },
+  {
+    id: 6,
+    name: "Wakanda",
+    description: "La nación africana más avanzada tecnológicamente, rica en vibranium y hogar de Black Panther. Un reino oculto que combina tradición ancestral con tecnología futurista.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=150&h=150&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/wakanda/4020-56656/",
+    start_year: 1966
+  }
+];
+
+// Función para obtener locations populares
+export const getPopularLocations = async (page: number = 1, useSampleData: boolean = true): Promise<{ results: Location[]; total: number; page: number }> => {
+  if (useSampleData) {
+    // Simular paginación con datos de ejemplo
+    const itemsPerPage = 6;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    return {
+      results: SAMPLE_LOCATIONS.slice(startIndex, endIndex),
+      total: SAMPLE_LOCATIONS.length,
+      page: page
+    };
+  }
+
   try {
-    // Estrategias para obtener variedad de personajes
-    const strategies = [
-      // Estrategia 1: Orden alfabético
-      `${COMICVINE_BASE_URL}/characters/?api_key=${API_KEY}&format=json&limit=20&sort=name:asc&offset=${(page - 1) * 20}&field_list=id,name,real_name,image,description,publisher,powers,origin,site_detail_url`,
-      // Estrategia 2: Por fecha de adición
-      `${COMICVINE_BASE_URL}/characters/?api_key=${API_KEY}&format=json&limit=20&sort=date_added:desc&offset=${(page - 1) * 20}&field_list=id,name,real_name,image,description,publisher,powers,origin,site_detail_url`,
-      // Estrategia 3: Por popularidad (fecha de última actualización)
-      `${COMICVINE_BASE_URL}/characters/?api_key=${API_KEY}&format=json&limit=20&sort=date_last_updated:desc&offset=${(page - 1) * 20}&field_list=id,name,real_name,image,description,publisher,powers,origin,site_detail_url`
-    ];
+    const response = await fetch(
+      `${COMICVINE_BASE_URL}/locations/?api_key=${API_KEY}&format=json&sort=name&limit=12&offset=${(page - 1) * 12}`,
+      { mode: 'cors' }
+    );
     
-    // Seleccionar estrategia aleatoria si randomize es true
-    const url = randomize 
-      ? strategies[Math.floor(Math.random() * strategies.length)]
-      : strategies[0]; // Por defecto alfabético
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
     
+    const data = await response.json();
+    
+    return {
+      results: data.results || [],
+      total: data.number_of_total_results || 0,
+      page: page
+    };
+  } catch (error) {
+    console.warn('Error fetching from ComicVine API, using sample data:', error);
+    // Fallback a datos de ejemplo
+    const itemsPerPage = 6;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    return {
+      results: SAMPLE_LOCATIONS.slice(startIndex, endIndex),
+      total: SAMPLE_LOCATIONS.length,
+      page: page
+    };
+  }
+};
+
+// ===== SERIES INTERFACES AND DATA =====
+
+export interface Series {
+  id: number;
+  name: string;
+  description: string;
+  image?: {
+    icon_url: string;
+    medium_url: string;
+    screen_url: string;
+    screen_large_url: string;
+    small_url: string;
+    super_url: string;
+    thumb_url: string;
+    tiny_url: string;
+    original_url: string;
+  };
+  publisher?: {
+    id: number;
+    name: string;
+  };
+  site_detail_url: string;
+  start_year?: number;
+  count_of_issues?: number;
+  count_of_volumes?: number;
+}
+
+// Datos de ejemplo para series populares
+const SAMPLE_SERIES: Series[] = [
+  {
+    id: 1,
+    name: "Batman",
+    description: "La serie de Batman incluye todas las publicaciones del Caballero Oscuro desde 1939. Siguiendo las aventuras de Bruce Wayne como Batman, protector de Gotham City, enfrentando villanos icónicos como Joker, Penguin, Riddler y muchos más a lo largo de diferentes eras y continuidades.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=150&h=150&fit=crop&crop=center",
+      medium_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=300&h=400&fit=crop&crop=center",
+      screen_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=400&h=600&fit=crop&crop=center",
+      screen_large_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=600&h=800&fit=crop&crop=center",
+      small_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=200&h=300&fit=crop&crop=center",
+      super_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=800&h=1200&fit=crop&crop=center",
+      thumb_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=100&h=150&fit=crop&crop=center",
+      tiny_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=50&h=75&fit=crop&crop=center",
+      original_url: "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=1200&h=1800&fit=crop&crop=center"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/batman/4050-796/",
+    start_year: 1939,
+    count_of_issues: 881,
+    count_of_volumes: 15
+  },
+  {
+    id: 2,
+    name: "The Amazing Spider-Man",
+    description: "La serie principal de Spider-Man que sigue las aventuras de Peter Parker desde 1963. Explora su doble vida como fotógrafo y superhéroe, sus relaciones, y sus enfrentamientos contra villanos como Green Goblin, Doctor Octopus, Venom y Sandman.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/the-amazing-spider-man/4050-2127/",
+    start_year: 1963,
+    count_of_issues: 801,
+    count_of_volumes: 5
+  },
+  {
+    id: 3,
+    name: "Superman",
+    description: "La serie emblemática del Hombre de Acero desde 1938. Sigue las aventuras de Clark Kent/Kal-El como Superman, protegiendo Metropolis y la Tierra de amenazas tanto terrestres como extraterrestres, incluyendo Lex Luthor, Doomsday y Brainiac.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1594736797933-d0b020ccfb0d?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/superman/4050-368/",
+    start_year: 1938,
+    count_of_issues: 714,
+    count_of_volumes: 12
+  },
+  {
+    id: 4,
+    name: "X-Men",
+    description: "La serie que presenta a los mutantes más famosos del universo Marvel. Sigue las aventuras del Profesor Charles Xavier y su escuela para jóvenes dotados, explorando temas de discriminación, aceptación y la lucha por la coexistencia pacífica entre humanos y mutantes.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/x-men/4050-18077/",
+    start_year: 1963,
+    count_of_issues: 544,
+    count_of_volumes: 8
+  },
+  {
+    id: 5,
+    name: "Wonder Woman",
+    description: "La serie de la Princesa Amazona desde 1941. Sigue las aventuras de Diana de Themyscira como Wonder Woman, embajadora de paz y guerrera, protegiendo tanto el mundo de los mortales como Themyscira de amenazas míticas y modernas.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/wonder-woman/4050-368/",
+    start_year: 1941,
+    count_of_issues: 329,
+    count_of_volumes: 7
+  },
+  {
+    id: 6,
+    name: "The Avengers",
+    description: "La serie de Los Vengadores de Marvel, reuniendo a los héroes más poderosos de la Tierra. Desde su formación en 1963, este equipo ha enfrentado amenazas que ningún héroe podría manejar solo, incluyendo invasiones extraterrestres, villanos cósmicos y crisis multiversales.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1608889135638-8ed31095eb8e?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/the-avengers/4050-2128/",
+    start_year: 1963,
+    count_of_issues: 402,
+    count_of_volumes: 9
+  },
+  {
+    id: 7,
+    name: "The Fantastic Four",
+    description: "La primera familia de superhéroes de Marvel. Reed Richards, Sue Storm, Johnny Storm y Ben Grimm obtuvieron poderes cósmicos en una misión espacial y se convirtieron en los Fantastic Four, explorando dimensiones alternativas y enfrentando amenazas cósmicas como Galactus y Doctor Doom.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/fantastic-four/4050-2123/",
+    start_year: 1961,
+    count_of_issues: 588,
+    count_of_volumes: 6
+  },
+  {
+    id: 8,
+    name: "Justice League",
+    description: "Los héroes más poderosos del universo DC unidos para proteger la Tierra. Superman, Batman, Wonder Woman, Flash, Green Lantern, Aquaman y Cyborg forman el equipo de superhéroes más formidable, enfrentando amenazas que ningún héroe podría enfrentar solo.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1531259683007-016a943acd2e?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/justice-league/4050-2127/",
+    start_year: 1960,
+    count_of_issues: 261,
+    count_of_volumes: 4
+  },
+  {
+    id: 9,
+    name: "The Flash",
+    description: "El hombre más rápido del mundo. Desde Jay Garrick hasta Barry Allen y Wally West, The Flash ha protegido Central City y el mundo usando la Speed Force, enfrentando villanos como Reverse-Flash, Captain Cold y los Rogues mientras explora el multiverso.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/the-flash/4050-2129/",
+    start_year: 1940,
+    count_of_issues: 800,
+    count_of_volumes: 5
+  },
+  {
+    id: 10,
+    name: "Green Lantern",
+    description: "Los guardianes del universo armados con los anillos de poder más poderosos. Desde Hal Jordan hasta John Stewart, Guy Gardner y Kyle Rayner, los Green Lanterns protegen el espacio como miembros del Green Lantern Corps, enfrentando amenazas cósmicas.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/green-lantern/4050-2130/",
+    start_year: 1940,
+    count_of_issues: 182,
+    count_of_volumes: 3
+  },
+  {
+    id: 11,
+    name: "Teen Titans",
+    description: "Los jóvenes héroes más talentosos del universo DC. Robin, Starfire, Raven, Beast Boy y Cyborg forman este equipo de adolescentes superhéroes que enfrentan amenazas tanto terrestres como dimensionales mientras lidian con los desafíos de crecer.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 10, name: "DC Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/teen-titans/4050-2131/",
+    start_year: 1966,
+    count_of_issues: 43,
+    count_of_volumes: 6
+  },
+  {
+    id: 12,
+    name: "Guardians of the Galaxy",
+    description: "Los protectores cósmicos más improbables del universo Marvel. Star-Lord, Gamora, Drax, Rocket Raccoon y Groot forman este equipo disfuncional pero efectivo que protege la galaxia de amenazas cósmicas mientras lidian con sus propios pasados problemáticos.",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=1200&h=1800&fit=crop"
+    },
+    publisher: { id: 31, name: "Marvel Comics" },
+    site_detail_url: "https://comicvine.gamespot.com/guardians-of-the-galaxy/4050-2132/",
+    start_year: 1969,
+    count_of_issues: 62,
+    count_of_volumes: 4
+  }
+];
+
+// Función para buscar series por nombre
+export const searchSeries = async (query: string, limit: number = 10): Promise<ComicVineResponse<Series>> => {
+  try {
+    console.log('🔍 Buscando series...', query);
+    
+    // Intentar ComicVine API
     try {
-      console.log(`👤 Intentando llamada real a ComicVine API para personajes (página ${page})...`);
-      const response = await fetch(url);
+      console.log('📚 Intentando ComicVine API...');
+      const url = buildApiUrl('/volumes/', `&filter=name:${encodeURIComponent(query)}&limit=${limit}&field_list=id,name,image,description,start_year,publisher,count_of_issues,site_detail_url`);
       
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         if (data.status_code === 1 && data.results) {
-          console.log('✅ API real de personajes funcionó!', data);
+          console.log('✅ ComicVine API funcionó!', data);
           
           // Mapear los datos de la API real al formato esperado
-          const mappedResults = data.results.map((character: any) => ({
-            id: character.id,
-            name: character.name,
-            real_name: character.real_name || character.name,
-            image: character.image || {
-              icon_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/xs/1-batman.jpg`,
-              medium_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/1-batman.jpg`,
-              screen_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/1-batman.jpg`,
-              screen_large_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/1-batman.jpg`,
-              small_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/sm/1-batman.jpg`,
-              super_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/1-batman.jpg`,
-              thumb_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/xs/1-batman.jpg`,
-              tiny_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/xs/1-batman.jpg`,
-              original_url: `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/lg/1-batman.jpg`
+          const mappedResults = data.results.map((volume: any) => ({
+            id: volume.id,
+            name: volume.name,
+            image: volume.image || {
+              icon_url: `https://via.placeholder.com/150x150/34495e/ffffff?text=SERIE`,
+              medium_url: `https://via.placeholder.com/300x400/34495e/ffffff?text=Serie+Magazine`,
+              screen_url: `https://via.placeholder.com/400x600/34495e/ffffff?text=Serie+Magazine`,
+              screen_large_url: `https://via.placeholder.com/600x800/34495e/ffffff?text=Serie+Magazine`,
+              small_url: `https://via.placeholder.com/200x300/34495e/ffffff?text=SERIE`,
+              super_url: `https://via.placeholder.com/800x1200/34495e/ffffff?text=Serie+Magazine`,
+              thumb_url: `https://via.placeholder.com/100x150/34495e/ffffff?text=SER`,
+              tiny_url: `https://via.placeholder.com/50x75/34495e/ffffff?text=S`,
+              original_url: `https://via.placeholder.com/1200x1800/34495e/ffffff?text=Serie+Magazine`
             },
-            description: character.description || "Información no disponible",
-            publisher: character.publisher || { id: 0, name: "Desconocido" },
-            powers: character.powers || ["Información no disponible"],
-            origin: character.origin || "Origen desconocido",
-            site_detail_url: character.site_detail_url || "",
+            description: volume.description || "Información no disponible",
+            start_year: volume.start_year || 2000,
+            publisher: volume.publisher || { id: 0, name: "Desconocido" },
+            issue_count: volume.count_of_issues || 0,
+            site_detail_url: volume.site_detail_url || "",
             rating: {
               average: Math.floor(Math.random() * 3) + 7 + Math.random(),
               count: Math.floor(Math.random() * 2000) + 500
@@ -823,85 +1288,176 @@ export const getPopularCharacters = async (page: number = 1, randomize: boolean 
         }
       }
     } catch (corsError) {
-      console.warn('❌ CORS bloqueó la API real de personajes:', corsError);
+      console.warn('❌ ComicVine API también falló por CORS:', corsError);
     }
     
-    // Fallback a datos de ejemplo si CORS bloquea
-    console.log(`📋 Usando datos de ejemplo de personajes debido a CORS (página ${page})...`);
-    await simulateDelay(600);
-    
-    // Mezclar personajes de ejemplo para simular páginas diferentes
-    let availableCharacters = [...SAMPLE_CHARACTERS];
-    
-    // FORZAR que Aquaman y Green Lantern aparezcan primero en página 1
-    if (page === 1) {
-      const aquamanIndex = availableCharacters.findIndex(char => char.name.toLowerCase().includes('aquaman'));
-      const greenLanternIndex = availableCharacters.findIndex(char => char.name.toLowerCase().includes('green lantern'));
-      
-      if (aquamanIndex > -1) {
-        const aquaman = availableCharacters.splice(aquamanIndex, 1)[0];
-        availableCharacters.unshift(aquaman);
-        console.log('🔱 Aquaman movido al primer lugar');
-      }
-      
-      if (greenLanternIndex > -1) {
-        const adjustedIndex = greenLanternIndex > aquamanIndex ? greenLanternIndex - 1 : greenLanternIndex;
-        const greenLantern = availableCharacters.splice(adjustedIndex, 1)[0];
-        availableCharacters.splice(1, 0, greenLantern);
-        console.log('💚 Green Lantern movido al segundo lugar');
-      }
-    }
-    
-    if (randomize && page > 1) {
-      // Solo mezclar para páginas después de la primera
-      availableCharacters = availableCharacters.sort(() => Math.random() - 0.5);
-    }
-    
-    // Simular paginación con los datos de ejemplo
-    const startIndex = ((page - 1) * 14) % availableCharacters.length;
-    let pageCharacters: Character[] = [];
-    
-    // Obtener 14 personajes (puede ciclar si es necesario)
-    for (let i = 0; i < 14; i++) {
-      const index = (startIndex + i) % availableCharacters.length;
-      pageCharacters.push(availableCharacters[index]);
-    }
-    
-    // Si necesitamos más personajes para llegar a 14, duplicar algunos con IDs diferentes
-    if (pageCharacters.length < 14) {
-      const needed = 14 - pageCharacters.length;
-      for (let i = 0; i < needed; i++) {
-        const charIndex = i % availableCharacters.length;
-        const duplicateChar = {
-          ...availableCharacters[charIndex],
-          id: availableCharacters[charIndex].id + 10000 + (page * 100) + i
-        };
-        pageCharacters.push(duplicateChar);
-      }
-    }
-    
-    // Si es página > 1, modificar ligeramente los IDs para evitar duplicados
-    if (page > 1) {
-      pageCharacters = pageCharacters.map((char, index) => ({
-        ...char,
-        id: char.id + (page * 1000) + index // Modificar ID para evitar duplicados
-      }));
-    }
-    
-    console.log(`📦 Devolviendo ${pageCharacters.length} personajes para la página ${page}`);
+    // 3. Fallback final: usar datos de ejemplo
+    console.log('📋 Usando datos de ejemplo como último recurso...');
+    await simulateDelay(500);
+    const filteredSeries = SAMPLE_SERIES.filter(series => 
+      series.name.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, limit);
     
     return {
       error: "OK",
-      limit: 14,
-      offset: (page - 1) * 14,
-      number_of_page_results: pageCharacters.length,
-      number_of_total_results: 10000, // Simular que hay muchos más
+      limit: limit,
+      offset: 0,
+      number_of_page_results: filteredSeries.length,
+      number_of_total_results: filteredSeries.length,
       status_code: 1,
-      results: pageCharacters
+      results: filteredSeries
     };
   } catch (error) {
-    console.error('Error obteniendo personajes populares:', error);
+    console.error('Error buscando series:', error);
     throw error;
+  }
+};
+
+// Función para obtener detalles de una serie específica
+export const getSeriesDetails = async (seriesId: number): Promise<Series> => {
+  try {
+    const url = buildApiUrl(`/volume/4050-${seriesId}/`);
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error obteniendo detalles de la serie:', error);
+    throw error;
+  }
+};
+
+// Función para obtener issues de una serie
+export const getSeriesIssues = async (seriesId: number, limit: number = 20): Promise<ComicVineResponse<Issue>> => {
+  try {
+    const url = `${COMICVINE_BASE_URL}/issues/?api_key=${API_KEY}&format=json&filter=volume:${seriesId}&limit=${limit}&sort=issue_number:asc`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error obteniendo issues de la serie:', error);
+    throw error;
+  }
+};
+
+// Función para buscar issues por nombre en series
+export const searchSeriesIssues = async (query: string, limit: number = 10): Promise<ComicVineResponse<Issue>> => {
+  try {
+    const url = `${COMICVINE_BASE_URL}/issues/?api_key=${API_KEY}&format=json&filter=name:${encodeURIComponent(query)}&limit=${limit}`;
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error buscando issues en series:', error);
+    throw error;
+  }
+};
+
+// Función para obtener series populares
+export const getPopularSeries = async (page: number = 1, useSampleData: boolean = true): Promise<{ results: Series[]; total: number; page: number }> => {
+  if (useSampleData) {
+    // Simular paginación con datos de ejemplo
+    const itemsPerPage = 6;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    return {
+      results: SAMPLE_SERIES.slice(startIndex, endIndex),
+      total: SAMPLE_SERIES.length,
+      page: page
+    };
+  }
+
+  try {
+    const response = await fetch(
+      `${COMICVINE_BASE_URL}/volumes/?api_key=${API_KEY}&format=json&sort=name&limit=12&offset=${(page - 1) * 12}`,
+      { mode: 'cors' }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      results: data.results || [],
+      total: data.number_of_total_results || 0,
+      page: page
+    };
+  } catch (error) {
+    console.warn('Error fetching from ComicVine API, using sample data:', error);
+    // Fallback a datos de ejemplo
+    const itemsPerPage = 6;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    return {
+      results: SAMPLE_SERIES.slice(startIndex, endIndex),
+      total: SAMPLE_SERIES.length,
+      page: page
+    };
+  }
+};
+
+// Función para obtener characters populares
+export const getPopularCharacters = async (page: number = 1, useSampleData: boolean = true): Promise<{ results: Character[]; total: number; page: number }> => {
+  if (useSampleData) {
+    // Simular paginación con datos de ejemplo
+    const itemsPerPage = 12;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    return {
+      results: SAMPLE_CHARACTERS.slice(startIndex, endIndex),
+      total: SAMPLE_CHARACTERS.length,
+      page: page
+    };
+  }
+
+  try {
+    const response = await fetch(
+      `${COMICVINE_BASE_URL}/characters/?api_key=${API_KEY}&format=json&sort=name&limit=12&offset=${(page - 1) * 12}`,
+      { mode: 'cors' }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      results: data.results || [],
+      total: data.number_of_total_results || 0,
+      page: page
+    };
+  } catch (error) {
+    console.warn('Error fetching from ComicVine API, using sample data:', error);
+    // Fallback a datos de ejemplo
+    const itemsPerPage = 12;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    return {
+      results: SAMPLE_CHARACTERS.slice(startIndex, endIndex),
+      total: SAMPLE_CHARACTERS.length,
+      page: page
+    };
   }
 };
 
