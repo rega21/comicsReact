@@ -4,7 +4,15 @@ import CharacterModal from '../components/CharacterModal';
 import MovieModal from '../components/MovieModal';
 import LocationModal from '../components/LocationModal';
 import SeriesModal from '../components/SeriesModal';
-import { getMovieFallback } from '../utils/imageUtils';
+import { 
+  getMovieFallback,
+  getCharacterImageLocal,
+  getCharacterSpecificFallback,
+  getMovieImageLocal,
+  getLocationImageLocal,
+  getSeriesImageLocal,
+  getComicImageLocal
+} from '../utils/imageUtils';
 
 // Importar TMDB para películas
 import { getPopularSuperheroMovies, type TMDBMovie } from '../api/tmdb-example';
@@ -21,12 +29,40 @@ import {
   type Series as ComicVineSeries
 } from '../api/comicvine';
 
+// Villanos destacados manuales (por nombre)
+const VILLAIN_NAMES = [
+  'Joker',
+  'Lex Luthor',
+  'Green Goblin',
+  'Magneto',
+  'Thanos',
+  'Venom',
+  'Doctor Octopus',
+  'Loki',
+  'Darkseid',
+  'Harley Quinn'
+];
+
 const Home: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'comics' | 'characters' | 'movies'>('comics');
+  // Estado para magazine
+  const [showMagazine, setShowMagazine] = useState(false);
+  const [magazineSearch, setMagazineSearch] = useState('');
+
+  // --- Tendencias Home ---
+  const getTopComics = () => [...comics].sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0)).slice(0, 5);
+  const getTopMovies = () => [...movies].sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0)).slice(0, 5);
+  const getTopHeroes = () => [...characters].sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0)).slice(0, 5);
+  const getTopVillains = () =>
+    characters
+      .filter(c => VILLAIN_NAMES.some(v => c.name.toLowerCase().includes(v.toLowerCase())))
+      .sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0))
+      .slice(0, 5);
   const [selectedComic, setSelectedComic] = useState<ComicVineComic | null>(null);
   const [selectedCharacter, setSelectedCharacter] = useState<ComicVineCharacter | null>(null);
   const [selectedMovie, setSelectedMovie] = useState<TMDBMovie | null>(null);
-  
+
+  // Estado para paginación de cómics
+  const [currentComicsPage, setCurrentComicsPage] = useState<number>(1);
   // Estados para cómics (ComicVine)
   const [comics, setComics] = useState<ComicVineComic[]>([]);
   const [comicsLoading, setComicsLoading] = useState(false);
@@ -70,7 +106,6 @@ const Home: React.FC = () => {
 
   // Función para resetear al inicio
   const resetToHome = () => {
-    setActiveTab('comics');
     setShowWikiDropdown(false);
     setIsWikiMode(false);
     setWikiSection('');
@@ -84,15 +119,6 @@ const Home: React.FC = () => {
     setShowWikiDropdown(false);
     setIsWikiMode(true);
     setWikiSection(section);
-    
-    // Cambiar a la pestaña correspondiente
-    if (section === 'characters') {
-      setActiveTab('characters');
-    } else if (section === 'movies') {
-      setActiveTab('movies');
-    } else {
-      setActiveTab('comics'); // Para locations, teams, series por ahora van a comics
-    }
   };
 
   // Cargar datos al iniciar
@@ -133,7 +159,7 @@ const Home: React.FC = () => {
     setComicsLoading(true);
     setComicsError(null);
     try {
-      const response = await getPopularComics(20);
+      const response = await getPopularComics(50);
       setComics(response.results);
     } catch (error) {
       console.error('Error loading popular comics:', error);
@@ -266,7 +292,6 @@ const Home: React.FC = () => {
             >
               ‹
             </button>
-            
             {/* Flecha siguiente */}
             <button 
               className="carousel-arrow carousel-arrow-next"
@@ -274,15 +299,19 @@ const Home: React.FC = () => {
             >
               ›
             </button>
-            
             <div 
               className="carousel-track"
               style={{
                 transform: `translateX(-${currentSlide * 100}%)`
               }}
             >
-              {carouselMovies.map((movie) => (
-                <div key={movie.id} className="carousel-slide" onClick={() => setSelectedMovie(movie)}>
+              {carouselMovies.map((movie, idx) => (
+                <div
+                  key={movie.id}
+                  className="carousel-slide"
+                  style={{ cursor: idx === currentSlide ? 'pointer' : 'default', pointerEvents: idx === currentSlide ? 'auto' : 'none' }}
+                  onClick={idx === currentSlide ? () => { console.log('Clic en slide activo:', movie.title); setSelectedMovie(movie); } : undefined}
+                >
                   <div className="slide-image">
                     <img 
                       src={movie.backdrop_path 
@@ -297,17 +326,6 @@ const Home: React.FC = () => {
                     />
                     <div className="slide-overlay">
                       <h3>{movie.title}</h3>
-                      <div className="slide-actions">
-                        <button 
-                          className="view-details-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedMovie(movie);
-                          }}
-                        >
-                          Ver Detalles
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -340,20 +358,53 @@ const Home: React.FC = () => {
       )}
       
       {!comicsLoading && !comicsError && (
-        <div className="comics-grid">
-          {comics.map((comic) => (
-            <div key={comic.id} className="comic-card" onClick={() => setSelectedComic(comic)}>
-              <div className="comic-info">
-                <h3 className="comic-title">{comic.name}</h3>
-                <p className="publisher">{comic.publisher?.name} • {comic.start_year}</p>
-                <p className="description">
-                  {comic.description?.replace(/<[^>]*>/g, '').slice(0, 150)}...
-                </p>
+        <>
+          <div className="comics-grid">
+            {comics.slice((currentComicsPage-1)*12, (currentComicsPage-1)*12 + 12).map((comic) => (
+              <div key={comic.id} className="comic-card" onClick={() => setSelectedComic(comic)}>
+                <div className="comic-image">
+                  <img 
+                    src={getComicImageLocal(comic)} 
+                    alt={comic.name}
+                    style={{ width: '100%', height: '320px', objectFit: 'cover', borderRadius: '12px', boxShadow: '0 2px 12px rgba(102,126,234,0.10)' }}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="comic-info">
+                  <h3 className="comic-title">{comic.name}</h3>
+                  <p className="publisher">{comic.publisher?.name} • {comic.start_year}</p>
+                  <p className="description">
+                    {comic.description?.replace(/<[^>]*>/g, '').slice(0, 150)}...
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+            <button
+              onClick={() => setCurrentComicsPage((prev: number) => prev + 1)}
+              disabled={currentComicsPage * 12 >= comics.length}
+              style={{
+                padding: '12px 32px',
+                background: currentComicsPage * 12 >= comics.length ? '#444' : 'linear-gradient(135deg, #667eea, #764ba2)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 20,
+                fontWeight: 600,
+                fontSize: '1.1rem',
+                cursor: currentComicsPage * 12 >= comics.length ? 'not-allowed' : 'pointer',
+                opacity: currentComicsPage * 12 >= comics.length ? 0.5 : 1,
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 12px rgba(102,126,234,0.10)'
+              }}
+            >
+              Siguiente
+            </button>
+          </div>
+        </>
       )}
+  // Estado para paginación de cómics
+  const [currentComicsPage, setCurrentComicsPage] = useState(1);
     </div>
   );
 
@@ -383,9 +434,10 @@ const Home: React.FC = () => {
             {characters.slice(0, 12).map((character) => (
               <div key={character.id} className="character-card" onClick={() => setSelectedCharacter(character)}>
                 <div className="character-image">
-                  <img 
-                    src={character.image?.medium_url || 'https://via.placeholder.com/400x600/663399/ffffff?text=Character'} 
+                  <img
+                    src={getCharacterImageLocal(character)}
                     alt={character.name}
+                    onError={(e) => { (e.target as HTMLImageElement).src = getCharacterSpecificFallback(character.name); }}
                   />
                 </div>
                 <div className="character-info">
@@ -439,13 +491,7 @@ const Home: React.FC = () => {
               <div key={movie.id} className={isWikiMode && wikiSection === 'movies' ? "movie-card-wiki" : "movie-card"} onClick={() => setSelectedMovie(movie)}>
                 <div className="movie-image">
                   <img 
-                    src={movie.backdrop_path 
-                      ? `https://image.tmdb.org/t/p/w500${movie.backdrop_path}` 
-                      : (movie.poster_path 
-                          ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-                          : getMovieFallback('medium')
-                        )
-                    } 
+                    src={getMovieImageLocal(movie)} 
                     alt={movie.title}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -517,7 +563,7 @@ const Home: React.FC = () => {
               <div key={location.id} className="location-card" onClick={() => setSelectedLocation(location)}>
                 <div className="location-image">
                   <img 
-                    src={location.image?.medium_url || 'https://via.placeholder.com/400x300/333333/ffffff?text=Location'} 
+                    src={getLocationImageLocal(location)} 
                     alt={location.name}
                   />
                 </div>
@@ -588,7 +634,7 @@ const Home: React.FC = () => {
               <div key={serie.id} className="series-card" onClick={() => setSelectedSeries(serie)}>
                 <div className="series-image">
                   <img 
-                    src={serie.image?.medium_url || 'https://via.placeholder.com/400x300/333333/ffffff?text=Series'} 
+                    src={getSeriesImageLocal(serie)} 
                     alt={serie.name}
                   />
                 </div>
@@ -662,31 +708,109 @@ const Home: React.FC = () => {
           </div>
           
           <button 
-            className="nav-item"
-            onClick={() => setActiveTab('comics')}
+            className={`nav-item${showMagazine ? ' active' : ''}`}
+            style={{ fontWeight: showMagazine ? 700 : undefined }}
+            onClick={() => setShowMagazine((prev) => !prev)}
+            title="Ver magazines destacados"
           >
-            New Comics
+            Magazines
           </button>
           <button 
             className="nav-item"
-            onClick={() => window.open('#', '_self')}
+            style={{ opacity: 0.6, cursor: 'not-allowed' }}
+            title="Esta sección está siendo configurada"
+            disabled
           >
-            Forums
+            Forums (fuera de servicio)
           </button>
           <button 
             className="nav-item"
-            onClick={() => window.open('#', '_self')}
+            style={{ opacity: 0.6, cursor: 'not-allowed' }}
+            title="Esta sección está siendo configurada"
+            disabled
           >
-            Community
+            Community (fuera de servicio)
           </button>
         </div>
       </nav>
+
+      {/* SECCIÓN DESTACADA DE TENDENCIAS SOLO EN INICIO/F5 */}
+      {!isWikiMode && !showMagazine && (
+        <div className="trending-section" style={{ margin: '32px 0 24px 0' }}>
+          <h2 style={{ color: '#fff', fontWeight: 700, fontSize: '1.6rem', marginBottom: 16, letterSpacing: 1 }}>Tendencias</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Magazines */}
+            <div>
+              <h3 style={{ color: '#667eea', fontWeight: 600, marginBottom: 8 }}>Magazines destacados</h3>
+              <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+                {getTopComics().map(comic => (
+                  <div key={comic.id} className="trending-card" style={{ minWidth: 180, background: '#232946', borderRadius: 16, boxShadow: '0 2px 12px #764ba230', padding: 12, cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onClick={() => setSelectedComic(comic)}>
+                    <img src={getComicImageLocal(comic)} alt={comic.name} style={{ width: 100, height: 140, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
+                    <div style={{ color: '#fff', fontWeight: 600, fontSize: 15, textAlign: 'center' }}>{comic.name}</div>
+                    <div style={{ color: '#aaa', fontSize: 13 }}>{comic.publisher?.name}</div>
+                    <div style={{ color: '#ffd700', fontWeight: 700, fontSize: 13 }}>★ {comic.rating?.average?.toFixed(1) ?? '-'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Películas */}
+            <div>
+              <h3 style={{ color: '#667eea', fontWeight: 600, marginBottom: 8 }}>Películas populares</h3>
+              <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+                {getTopMovies().map(movie => (
+                  <div key={movie.id} className="trending-card" style={{ minWidth: 180, background: '#232946', borderRadius: 16, boxShadow: '0 2px 12px #764ba230', padding: 12, cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onClick={() => setSelectedMovie(movie)}>
+                    <img src={getMovieImageLocal(movie)} alt={movie.title} style={{ width: 100, height: 140, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
+                    <div style={{ color: '#fff', fontWeight: 600, fontSize: 15, textAlign: 'center' }}>{movie.title}</div>
+                    <div style={{ color: '#aaa', fontSize: 13 }}>{movie.release_date?.slice(0, 4)}</div>
+                    <div style={{ color: '#ffd700', fontWeight: 700, fontSize: 13 }}>★ {movie.vote_average?.toFixed(1) ?? '-'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Héroes */}
+            <div>
+              <h3 style={{ color: '#667eea', fontWeight: 600, marginBottom: 8 }}>Héroes destacados</h3>
+              <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+                {getTopHeroes().map(hero => (
+                  <div key={hero.id} className="trending-card" style={{ minWidth: 180, background: '#232946', borderRadius: 16, boxShadow: '0 2px 12px #764ba230', padding: 12, cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onClick={() => setSelectedCharacter(hero)}>
+                    <img src={getCharacterImageLocal(hero)} alt={hero.name} style={{ width: 100, height: 140, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
+                    <div style={{ color: '#fff', fontWeight: 600, fontSize: 15, textAlign: 'center' }}>{hero.name}</div>
+                    <div style={{ color: '#aaa', fontSize: 13 }}>{hero.publisher?.name}</div>
+                    <div style={{ color: '#ffd700', fontWeight: 700, fontSize: 13 }}>★ {hero.rating?.average?.toFixed(1) ?? '-'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Villanos */}
+            <div>
+              <h3 style={{ color: '#667eea', fontWeight: 600, marginBottom: 8 }}>Villanos icónicos</h3>
+              <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
+                {getTopVillains().length === 0 ? (
+                  <div style={{ color: '#fff', opacity: 0.7 }}>No hay villanos destacados en la base de datos.</div>
+                ) : getTopVillains().map(villain => (
+                  <div key={villain.id} className="trending-card" style={{ minWidth: 180, background: '#232946', borderRadius: 16, boxShadow: '0 2px 12px #764ba230', padding: 12, cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onClick={() => setSelectedCharacter(villain)}>
+                    <img src={getCharacterImageLocal(villain)} alt={villain.name} style={{ width: 100, height: 140, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
+                    <div style={{ color: '#fff', fontWeight: 600, fontSize: 15, textAlign: 'center' }}>{villain.name}</div>
+                    <div style={{ color: '#aaa', fontSize: 13 }}>{villain.publisher?.name}</div>
+                    <div style={{ color: '#ffd700', fontWeight: 700, fontSize: 13 }}>★ {villain.rating?.average?.toFixed(1) ?? '-'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenido condicional: Wiki vs Home */}
       {isWikiMode ? (
         // Modo Wiki - Solo mostrar contenido específico
         <main className="wiki-content">
-          {wikiSection === 'movies' && renderMovies()}
+          {wikiSection === 'movies' && (
+            <>
+              {renderCarousel()}
+              {renderMovies()}
+            </>
+          )}
           {wikiSection === 'characters' && renderCharacters()}
           {wikiSection === 'comics' && renderComics()}
           {wikiSection === 'locations' && renderLocations()}
@@ -703,117 +827,124 @@ const Home: React.FC = () => {
             </div>
           )}
         </main>
+      ) : showMagazine ? (
+        // Magazine Mode: magazines con paginación y buscador
+        <div className="magazine-section">
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '24px 0 24px 0' }}>
+            <input
+              type="text"
+              placeholder="Buscar magazine..."
+              value={magazineSearch}
+              onChange={e => setMagazineSearch(e.target.value)}
+              style={{
+                padding: '12px 24px',
+                borderRadius: 20,
+                border: 'none',
+                fontSize: '1.1rem',
+                width: 320,
+                boxShadow: '0 2px 12px rgba(102,126,234,0.10)',
+                outline: 'none',
+                background: '#232946',
+                color: '#fff',
+                marginBottom: 0
+              }}
+            />
+          </div>
+          <div className="comics-grid magazine-grid">
+            {(() => {
+              const filtered = comics
+                .filter(comic =>
+                  magazineSearch.trim() === '' ||
+                  comic.name.toLowerCase().includes(magazineSearch.trim().toLowerCase()) ||
+                  (comic.publisher?.name && comic.publisher.name.toLowerCase().includes(magazineSearch.trim().toLowerCase()))
+                );
+              const magazinesPerPage = 12;
+              const totalPages = Math.ceil(filtered.length / magazinesPerPage) || 1;
+              const currentPage = Math.min(currentComicsPage, totalPages);
+              const start = (currentPage - 1) * magazinesPerPage;
+              const end = start + magazinesPerPage;
+              return filtered.slice(start, end).map((comic) => (
+                <div key={comic.id} className="comic-card" onClick={() => setSelectedComic(comic)}>
+                  <div className="comic-image">
+                    <img 
+                      src={getComicImageLocal(comic)}
+                      alt={comic.name}
+                    />
+                  </div>
+                  <div className="comic-info">
+                    <h3 className="comic-title">{comic.name}</h3>
+                    <p className="comic-publisher">{comic.publisher?.name}</p>
+                    <p className="comic-year">{comic.start_year}</p>
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+          {/* Paginación magazines */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+            {(() => {
+              const filtered = comics
+                .filter(comic =>
+                  magazineSearch.trim() === '' ||
+                  comic.name.toLowerCase().includes(magazineSearch.trim().toLowerCase()) ||
+                  (comic.publisher?.name && comic.publisher.name.toLowerCase().includes(magazineSearch.trim().toLowerCase()))
+                );
+              const magazinesPerPage = 12;
+              const totalPages = Math.ceil(filtered.length / magazinesPerPage) || 1;
+              const currentPage = Math.min(currentComicsPage, totalPages);
+              return (
+                <>
+                  <button
+                    onClick={() => setCurrentComicsPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '12px 32px',
+                      background: currentPage === 1 ? '#444' : 'linear-gradient(135deg, #667eea, #764ba2)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 20,
+                      fontWeight: 600,
+                      fontSize: '1.1rem',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      marginRight: 16,
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 12px rgba(102,126,234,0.10)'
+                    }}
+                  >
+                    Anterior
+                  </button>
+                  <span style={{ alignSelf: 'center', color: '#fff', fontWeight: 600, fontSize: '1.1rem', margin: '0 16px' }}>
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentComicsPage((prev) => prev + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '12px 32px',
+                      background: currentPage === totalPages ? '#444' : 'linear-gradient(135deg, #667eea, #764ba2)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 20,
+                      fontWeight: 600,
+                      fontSize: '1.1rem',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      marginLeft: 16,
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 12px rgba(102,126,234,0.10)'
+                    }}
+                  >
+                    Siguiente
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </div>
       ) : (
-        // Modo Home - Mostrar carousel + secciones + contenido por tabs
-        <>
-          {renderCarousel()}
-
-          {/* Featured sections after carousel */}
-          <div className="featured-sections">
-            {/* New Comic Releases */}
-            <section className="horizontal-section">
-              <h2>New Comic Releases</h2>
-              <div className="horizontal-cards">
-                {comics.slice(0, 6).map((comic) => (
-                  <div key={comic.id} className="horizontal-card" onClick={() => setSelectedComic(comic)}>
-                    <div className="horizontal-card-content">
-                      <h4>{comic.name}</h4>
-                      <p>{comic.publisher?.name}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Popular Characters */}
-            <section className="horizontal-section">
-              <h2>Popular Characters</h2>
-              <div className="horizontal-cards">
-                {characters.slice(0, 6).map((character) => (
-                  <div key={character.id} className="horizontal-card" onClick={() => setSelectedCharacter(character)}>
-                    <div className="horizontal-card-image">
-                      <img 
-                        src={character.image?.small_url || 'https://via.placeholder.com/200x300/663399/ffffff?text=Character'} 
-                        alt={character.name}
-                      />
-                    </div>
-                    <div className="horizontal-card-content">
-                      <h4>{character.name}</h4>
-                      <p>{character.real_name || 'Secret Identity'}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Top Rated Comics */}
-            <section className="horizontal-section">
-              <h2>Top Rated Comics</h2>
-              <div className="horizontal-cards">
-                {comics.slice(6, 12).map((comic) => (
-                  <div key={comic.id} className="horizontal-card" onClick={() => setSelectedComic(comic)}>
-                    <div className="horizontal-card-content">
-                      <h4>{comic.name}</h4>
-                      <p>{comic.start_year}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Marvel vs DC */}
-            <section className="horizontal-section">
-              <h2>Marvel vs DC</h2>
-              <div className="horizontal-cards">
-                {characters.filter(char => 
-                  char.publisher?.name?.toLowerCase().includes('marvel') || 
-                  char.publisher?.name?.toLowerCase().includes('dc')
-                ).slice(0, 6).map((character) => (
-                  <div key={character.id} className="horizontal-card" onClick={() => setSelectedCharacter(character)}>
-                    <div className="horizontal-card-image">
-                      <img 
-                        src={character.image?.small_url || 'https://via.placeholder.com/200x300/663399/ffffff?text=Character'} 
-                        alt={character.name}
-                      />
-                    </div>
-                    <div className="horizontal-card-content">
-                      <h4>{character.name}</h4>
-                      <p>{character.publisher?.name}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* Tabs Navigation */}
-          <div className="tabs-navigation">
-            <button 
-              className={`tab ${activeTab === 'comics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('comics')}
-            >
-              Comics
-            </button>
-            <button 
-              className={`tab ${activeTab === 'characters' ? 'active' : ''}`}
-              onClick={() => setActiveTab('characters')}
-            >
-              Characters
-            </button>
-            <button 
-              className={`tab ${activeTab === 'movies' ? 'active' : ''}`}
-              onClick={() => setActiveTab('movies')}
-            >
-              Movies
-            </button>
-          </div>
-
-          <main className="main-content">
-            {activeTab === 'comics' && renderComics()}
-            {activeTab === 'characters' && renderCharacters()}
-            {activeTab === 'movies' && renderMovies()}
-          </main>
-        </>
+        // Modo Home - Sección de tendencias únicamente (featured-sections y grilla de cómics ocultos)
+        <></>
       )}
 
       {selectedComic && (

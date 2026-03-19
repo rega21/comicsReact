@@ -1,5 +1,5 @@
 import React from 'react';
-import { getComicFallback } from '../utils/imageUtils';
+import { getComicImageLocal } from '../utils/imageUtils';
 import type { Comic as ComicVineComic } from '../api/comicvine';
 
 interface ComicModalProps {
@@ -27,13 +27,9 @@ const ComicModal: React.FC<ComicModalProps> = ({ comic, isOpen, onClose }) => {
         <div className="modal-body">
           <div className="modal-image-section">
             <img
-              src={comic.image?.screen_large_url || getComicFallback('large')}
+              src={getComicImageLocal(comic)}
               alt={comic.name}
               className="modal-comic-image"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = getComicFallback('large');
-              }}
             />
           </div>
           

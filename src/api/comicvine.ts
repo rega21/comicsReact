@@ -1,6 +1,6 @@
 // ComicVine API Configuration and Functions
 
-const COMICVINE_BASE_URL = 'https://comicvine.gamespot.com/api';
+const COMICVINE_BASE_URL = '/api/comicvine';
 const API_KEY = '2ff78708c99b3612ecc5259ffa63de8997416353';
 
 // Datos de ejemplo para desarrollo (usando imágenes reales de dominio público)
@@ -124,6 +124,451 @@ const SAMPLE_COMICS: Comic[] = [
       average: 8.9,
       count: 1834
     }
+  },
+  {
+    id: 6,
+    name: "X-Men",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Los X-Men son un equipo de superhéroes mutantes que luchan por la coexistencia pacífica entre humanos y mutantes.",
+    start_year: 1963,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 600,
+    site_detail_url: "https://comicvine.gamespot.com/x-men/4050-3/",
+    rating: {
+      average: 8.5,
+      count: 1200
+    }
+  },
+  {
+    id: 7,
+    name: "The Avengers",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Los héroes más poderosos de la Tierra se unen como Los Vengadores para enfrentar amenazas que ningún héroe podría manejar solo.",
+    start_year: 1963,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 500,
+    site_detail_url: "https://comicvine.gamespot.com/avengers/4050-4/",
+    rating: {
+      average: 8.6,
+      count: 1456
+    }
+  },
+  {
+    id: 8,
+    name: "Justice League",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Los superhéroes más poderosos de DC Comics se unen como la Liga de la Justicia para proteger la Tierra de amenazas cósmicas.",
+    start_year: 1960,
+    publisher: { id: 10, name: "DC Comics" },
+    issue_count: 400,
+    site_detail_url: "https://comicvine.gamespot.com/justice-league/4050-5/",
+    rating: {
+      average: 8.4,
+      count: 1234
+    }
+  },
+  {
+    id: 9,
+    name: "The Flash",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Barry Allen obtiene super velocidad después de ser alcanzado por un rayo y convertirse en el velocista escarlata conocido como Flash.",
+    start_year: 1959,
+    publisher: { id: 10, name: "DC Comics" },
+    issue_count: 300,
+    site_detail_url: "https://comicvine.gamespot.com/flash/4050-6/",
+    rating: {
+      average: 8.2,
+      count: 890
+    }
+  },
+  {
+    id: 10,
+    name: "Iron Man",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Tony Stark usa su genio y recursos para crear una armadura tecnológicamente avanzada y convertirse en Iron Man.",
+    start_year: 1968,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 400,
+    site_detail_url: "https://comicvine.gamespot.com/iron-man/4050-7/",
+    rating: {
+      average: 8.3,
+      count: 1100
+    }
+  },
+  {
+    id: 11,
+    name: "Thor",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "El Dios del Trueno de Asgard empuña su martillo mágico Mjolnir para proteger tanto Asgard como la Tierra.",
+    start_year: 1966,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 350,
+    site_detail_url: "https://comicvine.gamespot.com/thor/4050-8/",
+    rating: {
+      average: 8.1,
+      count: 980
+    }
+  },
+  {
+    id: 12,
+    name: "Captain America",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Steve Rogers se convierte en el super soldado Captain America durante la Segunda Guerra Mundial y continúa luchando por la justicia.",
+    start_year: 1941,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 450,
+    site_detail_url: "https://comicvine.gamespot.com/captain-america/4050-9/",
+    rating: {
+      average: 8.4,
+      count: 1345
+    }
+  },
+  {
+    id: 13,
+    name: "Fantastic Four",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Reed Richards, Sue Storm, Johnny Storm y Ben Grimm obtienen poderes cósmicos y se convierten en la primera familia de superhéroes.",
+    start_year: 1961,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 400,
+    site_detail_url: "https://comicvine.gamespot.com/fantastic-four/4050-10/",
+    rating: {
+      average: 8.2,
+      count: 1100
+    }
+  },
+  {
+    id: 14,
+    name: "Daredevil",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Matt Murdock perdió la vista pero ganó sentidos sobrehumanos, convirtiéndose en el vigilante conocido como Daredevil en Hell's Kitchen.",
+    start_year: 1964,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 350,
+    site_detail_url: "https://comicvine.gamespot.com/daredevil/4050-11/",
+    rating: {
+      average: 8.6,
+      count: 890
+    }
+  },
+  {
+    id: 15,
+    name: "Green Lantern",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Hal Jordan recibe un anillo de poder de los Guardianes del Universo y se convierte en Green Lantern, protector del sector espacial 2814.",
+    start_year: 1959,
+    publisher: { id: 10, name: "DC Comics" },
+    issue_count: 300,
+    site_detail_url: "https://comicvine.gamespot.com/green-lantern/4050-12/",
+    rating: {
+      average: 8.0,
+      count: 756
+    }
+  },
+  {
+    id: 16,
+    name: "Aquaman",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Arthur Curry es el Rey de Atlantis con la habilidad de comunicarse con la vida marina y controlar los océanos.",
+    start_year: 1962,
+    publisher: { id: 10, name: "DC Comics" },
+    issue_count: 250,
+    site_detail_url: "https://comicvine.gamespot.com/aquaman/4050-13/",
+    rating: {
+      average: 7.8,
+      count: 600
+    }
+  },
+  {
+    id: 17,
+    name: "The Hulk",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Bruce Banner se transforma en el increíble Hulk cuando se enfurece, convirtiéndose en uno de los seres más poderosos del universo.",
+    start_year: 1962,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 400,
+    site_detail_url: "https://comicvine.gamespot.com/hulk/4050-14/",
+    rating: {
+      average: 8.3,
+      count: 1200
+    }
+  },
+  {
+    id: 18,
+    name: "Teen Titans",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Un equipo de jóvenes superhéroes incluyendo Robin, Starfire, Raven, Beast Boy y Cyborg protegen Jump City.",
+    start_year: 1964,
+    publisher: { id: 10, name: "DC Comics" },
+    issue_count: 200,
+    site_detail_url: "https://comicvine.gamespot.com/teen-titans/4050-15/",
+    rating: {
+      average: 8.1,
+      count: 850
+    }
+  },
+  {
+    id: 19,
+    name: "Wolverine",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Logan, conocido como Wolverine, es un mutante con garras de adamantium y factor de curación que lucha junto a los X-Men.",
+    start_year: 1982,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 300,
+    site_detail_url: "https://comicvine.gamespot.com/wolverine/4050-16/",
+    rating: {
+      average: 8.5,
+      count: 1400
+    }
+  },
+  {
+    id: 20,
+    name: "Deadpool",
+    image: {
+      icon_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=150&h=200&fit=crop",
+      medium_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=300&h=400&fit=crop",
+      screen_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
+      screen_large_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=800&fit=crop",
+      small_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=200&h=300&fit=crop",
+      super_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=1200&fit=crop",
+      thumb_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100&h=150&fit=crop",
+      tiny_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=50&h=75&fit=crop",
+      original_url: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=1800&fit=crop"
+    },
+    description: "Wade Wilson es el mercenario conocido como Deadpool, famoso por su humor irreverente y su factor de curación regenerativo.",
+    start_year: 1997,
+    publisher: { id: 31, name: "Marvel Comics" },
+    issue_count: 200,
+    site_detail_url: "https://comicvine.gamespot.com/deadpool/4050-17/",
+    rating: {
+      average: 8.7,
+      count: 1600
+    }
+  },
+  // --- NUEVOS COMICS AGREGADOS ---
+  {
+    id: 1001,
+    name: "Spawn",
+    image: {
+      icon_url: "/images/comics/spawn.jpg",
+      medium_url: "/images/comics/spawn.jpg",
+      screen_url: "/images/comics/spawn.jpg",
+      screen_large_url: "/images/comics/spawn.jpg",
+      small_url: "/images/comics/spawn.jpg",
+      super_url: "/images/comics/spawn.jpg",
+      thumb_url: "/images/comics/spawn.jpg",
+      tiny_url: "/images/comics/spawn.jpg",
+      original_url: "/images/comics/spawn.jpg"
+    },
+    description: "Al Simmons, un ex agente de la CIA, regresa del infierno como Spawn, un antihéroe oscuro que lucha entre el bien y el mal.",
+    start_year: 1992,
+    publisher: { id: 101, name: "Image Comics" },
+    issue_count: 350,
+    site_detail_url: "https://comicvine.gamespot.com/spawn/4050-1234/",
+    rating: { average: 8.5, count: 900 }
+  },
+  {
+    id: 1002,
+    name: "Hellboy",
+    image: {
+      icon_url: "/images/comics/hellboy.jpg",
+      medium_url: "/images/comics/hellboy.jpg",
+      screen_url: "/images/comics/hellboy.jpg",
+      screen_large_url: "/images/comics/hellboy.jpg",
+      small_url: "/images/comics/hellboy.jpg",
+      super_url: "/images/comics/hellboy.jpg",
+      thumb_url: "/images/comics/hellboy.jpg",
+      tiny_url: "/images/comics/hellboy.jpg",
+      original_url: "/images/comics/hellboy.jpg"
+    },
+    description: "Hellboy, un demonio invocado por nazis, se convierte en un investigador paranormal que protege a la humanidad de amenazas sobrenaturales.",
+    start_year: 1994,
+    publisher: { id: 102, name: "Dark Horse Comics" },
+    issue_count: 80,
+    site_detail_url: "https://comicvine.gamespot.com/hellboy/4050-5678/",
+    rating: { average: 8.7, count: 700 }
+  },
+  {
+    id: 1003,
+    name: "Watchmen",
+    image: {
+      icon_url: "/images/comics/watchmen.jpg",
+      medium_url: "/images/comics/watchmen.jpg",
+      screen_url: "/images/comics/watchmen.jpg",
+      screen_large_url: "/images/comics/watchmen.jpg",
+      small_url: "/images/comics/watchmen.jpg",
+      super_url: "/images/comics/watchmen.jpg",
+      thumb_url: "/images/comics/watchmen.jpg",
+      tiny_url: "/images/comics/watchmen.jpg",
+      original_url: "/images/comics/watchmen.jpg"
+    },
+    description: "Una historia de superhéroes en un mundo alternativo, explorando temas de poder, moralidad y control social. Obra de Alan Moore y Dave Gibbons.",
+    start_year: 1986,
+    publisher: { id: 10, name: "DC Comics" },
+    issue_count: 12,
+    site_detail_url: "https://comicvine.gamespot.com/watchmen/4050-7890/",
+    rating: { average: 9.5, count: 1200 }
+  },
+  {
+    id: 1004,
+    name: "Sandman",
+    image: {
+      icon_url: "/images/comics/sandman.jpg",
+      medium_url: "/images/comics/sandman.jpg",
+      screen_url: "/images/comics/sandman.jpg",
+      screen_large_url: "/images/comics/sandman.jpg",
+      small_url: "/images/comics/sandman.jpg",
+      super_url: "/images/comics/sandman.jpg",
+      thumb_url: "/images/comics/sandman.jpg",
+      tiny_url: "/images/comics/sandman.jpg",
+      original_url: "/images/comics/sandman.jpg"
+    },
+    description: "La aclamada serie de Neil Gaiman sobre Morfeo, el Señor de los Sueños, y su influencia en el mundo de los mortales y los eternos.",
+    start_year: 1989,
+    publisher: { id: 103, name: "Vertigo/DC Comics" },
+    issue_count: 75,
+    site_detail_url: "https://comicvine.gamespot.com/the-sandman/4050-4321/",
+    rating: { average: 9.3, count: 950 }
   }
 ];
 
@@ -1195,7 +1640,7 @@ const SAMPLE_SERIES: Series[] = [
     name: "Teen Titans",
     description: "Los jóvenes héroes más talentosos del universo DC. Robin, Starfire, Raven, Beast Boy y Cyborg forman este equipo de adolescentes superhéroes que enfrentan amenazas tanto terrestres como dimensionales mientras lidian con los desafíos de crecer.",
     image: {
-      icon_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=200&fit=crop",
+      icon_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=150&h=150&fit=crop",
       medium_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=400&fit=crop",
       screen_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
       screen_large_url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=800&fit=crop",

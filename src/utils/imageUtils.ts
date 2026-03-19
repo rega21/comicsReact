@@ -1,4 +1,5 @@
 // Utilidades para manejo de imágenes y fallbacks
+import { getImageWithFallback, generateIdentifier, LOCAL_IMAGES } from './localImages';
 
 // Mapeo de personajes con películas de TMDB para obtener imágenes reales
 export interface CharacterMovieMapping {
@@ -1258,4 +1259,89 @@ export const getSuperSimpleCharacterImage = (character: { name: string; real_nam
   
   // Fallback final
   return 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop';
+};
+
+// ===== SISTEMA DE IMÁGENES LOCALES =====
+
+// Función principal para obtener imágenes de personajes con sistema local
+export const getCharacterImageLocal = (character: { 
+  name: string; 
+  real_name?: string; 
+  image?: { small_url?: string } 
+}): string => {
+  const identifier = generateIdentifier(character.name);
+  return getImageWithFallback(
+    'characters',
+    identifier,
+    character.image?.small_url,
+    'https://via.placeholder.com/200x300/663399/ffffff?text=Character'
+  );
+};
+
+// Función para obtener imágenes de películas con sistema local
+export const getMovieImageLocal = (movie: { 
+  title: string; 
+  poster_path?: string 
+}): string => {
+  const identifier = generateIdentifier(movie.title);
+  // Buscar imagen local primero
+  const localImage = LOCAL_IMAGES.movies[identifier];
+  if (localImage) {
+    return `/images/movies/${localImage}`;
+  }
+  // Si no hay imagen local, usar TMDB
+  const tmdbImage = movie.poster_path 
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : undefined;
+  // Fallback definitivo: SVG de servicio/no disponible
+  return tmdbImage || '/images/no-image-service.svg';
+};
+
+// Función para obtener imágenes de locations con sistema local
+export const getLocationImageLocal = (location: { 
+  name: string; 
+  image?: { small_url?: string } 
+}): string => {
+  const identifier = generateIdentifier(location.name);
+  return getImageWithFallback(
+    'locations',
+    identifier,
+    location.image?.small_url,
+    'https://via.placeholder.com/400x300/663399/ffffff?text=Location'
+  );
+};
+
+// Función para obtener imágenes de series con sistema local
+export const getSeriesImageLocal = (series: {
+  name: string;
+  image?: { small_url?: string }
+}): string => {
+  const identifier = generateIdentifier(series.name);
+
+  // 1. Imagen local de series
+  const seriesImg = getLocalImage('series', identifier);
+  if (seriesImg) return seriesImg;
+
+  // 2. Imagen local de cómics (las series comparten nombre con sus cómics)
+  const comicImg = getLocalImage('comics', identifier);
+  if (comicImg) return comicImg;
+
+  // 3. URL de la API
+  if (series.image?.small_url) return series.image.small_url;
+
+  return 'https://via.placeholder.com/300x450/663399/ffffff?text=Series';
+};
+
+// Función para obtener imágenes de cómics con sistema local
+export const getComicImageLocal = (comic: { 
+  name: string; 
+  image?: { small_url?: string } 
+}): string => {
+  const identifier = generateIdentifier(comic.name);
+  return getImageWithFallback(
+    'comics',
+    identifier,
+    comic.image?.small_url,
+    'https://via.placeholder.com/200x300/663399/ffffff?text=Comic'
+  );
 };
